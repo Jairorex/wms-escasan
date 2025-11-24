@@ -1,28 +1,30 @@
-# Imagen base de PHP 8.2 con extensiones necesarias
+# Imagen base de PHP 8.2 con CLI
 FROM php:8.2-cli
 
-# Instalar extensiones requeridas por Laravel y SQL Server
+# Instalar extensiones requeridas para Laravel + SQL Server
 RUN apt-get update && apt-get install -y \
     git unzip libzip-dev gnupg curl libssl-dev unixodbc-dev \
     && docker-php-ext-install zip pdo \
     && pecl install pdo_sqlsrv sqlsrv \
     && docker-php-ext-enable pdo_sqlsrv sqlsrv
 
-# Instalar Composer
+# Instalar Composer desde imagen oficial
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copiar archivos del proyecto
+# Establecer carpeta de trabajo al backend
 WORKDIR /var/www/html
+
+# Copiar solo los archivos del backend Laravel
 COPY . .
 
 # Instalar dependencias de Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Generar clave de app si no existe
+# Generar clave de aplicación
 RUN php artisan key:generate --force
 
-# Puerto que Railway usará
+# Exponer el puerto
 EXPOSE 8080
 
-# Comando de inicio
+# Iniciar Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
