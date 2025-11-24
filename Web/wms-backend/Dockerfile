@@ -21,7 +21,8 @@ COPY Web/wms-backend/ ./
 RUN composer install --no-dev --optimize-autoloader
 
 # Generar clave de app
-RUN php artisan key:generate --force
+CMD ["sh", "-c", "php artisan key:generate --force && php artisan serve --host=0.0.0.0 --port=8080"]
+
 
 # Exponer puerto y ejecutar servidor
 EXPOSE 8080
